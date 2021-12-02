@@ -8,6 +8,8 @@ fn main() {
     println!("Solution to day1 part 1: {}", day1a);
     let day1b = day1sol::day1b_sol("../input/day1.txt");
     println!("Solution to day1 part 2: {}", day1b);
-    let day2a = day2sol::day2a_sol("../input/example2.txt");
+    let day2a = day2sol::day2a_sol("../input/day2.txt");
     println!("Solution to day2 part 1: {}", day2a);
+    let day2b = day2sol::day2b_sol("../input/day2.txt");
+    println!("Solution to day2 part 2: {}", day2b);
 }

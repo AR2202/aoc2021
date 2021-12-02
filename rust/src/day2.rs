@@ -39,7 +39,11 @@ pub mod day2sol {
         hor: i32,
         depth: i32,
     }
-
+    #[derive(PartialEq, Eq, Hash, Debug)]
+    struct PosAim {
+        pos: Position,
+        aim: i32,
+    }
     pub fn day2a_sol(filename: &str) -> i32 {
         let contents = fs::read_to_string(filename).unwrap();
         let position = contents
@@ -49,20 +53,70 @@ pub mod day2sol {
         position.hor * position.depth
     }
 
-    fn moving(inst: Instruction, pos: Position) -> Position {
+    pub fn day2b_sol(filename: &str) -> i32 {
+        let contents = fs::read_to_string(filename).unwrap();
+        let position = contents
+            .lines()
+            .map(|line| Instruction::from_str(line).unwrap())
+            .fold(
+                PosAim {
+                    pos: Position { hor: 0, depth: 0 },
+                    aim: 0,
+                },
+                |p, inst| moving2(inst, p),
+            );
+        position.pos.hor * position.pos.depth
+    }
+
+    fn moving(inst: Instruction, p: Position) -> Position {
         match inst {
             Instruction::Forward(i) => Position {
-                hor: pos.hor + i,
-                depth: pos.depth,
+                hor: p.hor + i,
+                depth: p.depth,
             },
             Instruction::Up(i) => Position {
-                hor: pos.hor,
-                depth: pos.depth - i,
+                hor: p.hor,
+                depth: p.depth - i,
             },
             Instruction::Down(i) => Position {
-                hor: pos.hor,
-                depth: pos.depth + i,
+                hor: p.hor,
+                depth: p.depth + i,
             },
+        }
+    }
+    fn moving2(inst: Instruction, p: PosAim) -> PosAim {
+        match inst {
+            Instruction::Forward(i) => PosAim {
+                pos: Position {
+                    hor: p.pos.hor + i,
+                    depth: p.pos.depth + i * p.aim,
+                },
+                aim: p.aim,
+            },
+            Instruction::Up(i) => PosAim {
+                pos: p.pos,
+                aim: p.aim - i,
+            },
+            Instruction::Down(i) => PosAim {
+                pos: p.pos,
+                aim: p.aim + i,
+            },
+        }
+    }
+
+    // Test for day2
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn day2a_test() {
+            assert_eq!(day2a_sol("../input/example2.txt"), 150);
+        }
+
+        #[test]
+        fn day2b_test() {
+            assert_eq!(day2b_sol("../input/example2.txt"), 900);
         }
     }
 }
