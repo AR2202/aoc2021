@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f71a4309d2acaa13edab7b7cac1d27d9633311f83907bca06210fc3fa2457286
+-- hash: 001623f8b008015315c07e0bd10dca13d44b7e096307daf165c7303dcd265c52
 
 name:           haskell
 version:        0.1.0.0
@@ -30,12 +30,14 @@ library
       Common
       Day1
       Day2
+      Day3
   other-modules:
       Paths_haskell
   hs-source-dirs:
       src
   build-depends:
       base >=4.7 && <5
+    , binary
     , split
   default-language: Haskell2010
 
@@ -48,6 +50,7 @@ executable haskell-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , binary
     , haskell
     , split
   default-language: Haskell2010
@@ -62,6 +65,7 @@ test-suite haskell-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , binary
     , haskell
     , split
   default-language: Haskell2010
