@@ -1,6 +1,4 @@
 pub mod day3sol {
-    use itertools::Itertools;
-
     use std::fs;
 
     pub fn day3a_sol(filename: &str) -> u32 {
@@ -21,21 +19,11 @@ pub mod day3sol {
             .iter()
             .map(|&num| if num == '0' { '1' } else { '0' })
             .collect();
-        let base: u32 = 2;
-        let dec_max: u32 = maxes
-            .iter()
-            .rev()
-            .map(|c| c.to_digit(10).unwrap())
-            .enumerate()
-            .map(|(a, b)| base.pow(a as u32) * (b as u32))
-            .sum();
-        let dec_min: u32 = mins
-            .iter()
-            .rev()
-            .map(|c| c.to_digit(10).unwrap())
-            .enumerate()
-            .map(|(a, b)| base.pow(a as u32) * (b as u32))
-            .sum();
+
+        let dec_max: u32 = bin_string_to_decimal(maxes);
+
+        let dec_min: u32 = bin_string_to_decimal(mins);
+
         dec_min * dec_max
     }
 
@@ -59,6 +47,16 @@ pub mod day3sol {
                     .collect::<Vec<T>>()
             })
             .collect()
+    }
+
+    fn bin_string_to_decimal(v: Vec<char>) -> u32 {
+        let base: u32 = 2;
+        v.iter()
+            .rev()
+            .map(|c| c.to_digit(10).unwrap())
+            .enumerate()
+            .map(|(a, b)| base.pow(a as u32) * (b as u32))
+            .sum()
     }
     // Test for day3 part1
     #[cfg(test)]
