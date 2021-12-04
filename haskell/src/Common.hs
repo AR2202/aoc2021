@@ -8,6 +8,8 @@ module Common
   , loadPadded
   , readTuple
   , splitOnEq
+  , splitOnSpace
+  , splitOnComma
   ) where
 
 import           Control.Applicative
@@ -31,6 +33,10 @@ readLines filename = map read <$> loadAndSplitLines filename
 splitOnBlankLine filename = splitOn "\n\n" <$> loadInput filename
 
 splitOnEq filename = map (splitOn " = ") <$> loadAndSplitLines filename
+
+splitOnSpace = map (splitOn " ")
+
+splitOnComma = splitOn ","
 
 loadPadded filename = do
   contents <- loadInput filename
