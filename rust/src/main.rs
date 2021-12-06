@@ -20,4 +20,6 @@ fn main() {
     println!("Solution to day3 part 1: {}", day3a);
     let day5a = day5sol::day5a_sol("../input/day5.txt");
     println!("Solution to day5 part 1: {:?}", day5a);
+    let day5b = day5sol::day5b_sol("../input/day5.txt");
+    println!("Solution to day5 part 2: {:?}", day5b);
 }
