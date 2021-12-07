@@ -10,6 +10,7 @@ module Common
   , splitOnEq
   , splitOnSpace
   , splitOnComma
+  , makeListInt
   ) where
 
 import           Control.Applicative
@@ -26,6 +27,9 @@ loadAndSplitLines filename = do
   contents <- loadInput filename
   let linesOfFile = lines contents
   return linesOfFile
+
+makeListInt :: String -> IO [Int]
+makeListInt filename = map read . splitOnComma <$> loadInput filename
 
 readLines :: Read a => String -> IO [a]
 readLines filename = map read <$> loadAndSplitLines filename
