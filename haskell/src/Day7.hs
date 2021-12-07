@@ -1,6 +1,7 @@
 module Day7
   ( example7
   , day7a
+  , day7b
   ) where
 
 import           Common
@@ -28,3 +29,31 @@ example7 = fuelToMedian example7list
 
 day7a :: IO Int
 day7a = fuelToMedian <$> makeListInt "../input/day7.txt"
+
+-----------
+-- Part 2
+-----------
+mean list = round (fromIntegral (sum list) / fromIntegral (length list))
+
+roundupmean list =
+  ceiling (fromIntegral (sum list) / fromIntegral (length list))
+
+rounddownmean list = sum list `div` length list
+
+fuelToMean list = sum $ map (sumTon . abs . (m -)) list
+  where
+    m = mean list
+
+fuelToRD list = sum $ map (sumTon . abs . (m -)) list
+  where
+    m = rounddownmean list
+
+fuelToRU list = sum $ map (sumTon . abs . (m -)) list
+  where
+    m = roundupmean list
+
+sumTon n = sum [1 .. n]
+
+minimumFuel list = minimum [fuelToRU list, fuelToRD list]
+
+day7b = minimumFuel <$> makeListInt "../input/day7.txt"
