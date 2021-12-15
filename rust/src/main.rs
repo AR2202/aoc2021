@@ -6,6 +6,8 @@ pub mod day3;
 pub use crate::day3::day3sol;
 pub mod day5;
 pub use crate::day5::day5sol;
+pub mod day15;
+pub use crate::day15::day15sol::{graph_from_windows, read_intlists};
 
 fn main() {
     let day1a = day1sol::day1a_sol("../input/day1.txt");
@@ -22,4 +24,7 @@ fn main() {
     println!("Solution to day5 part 1: {:?}", day5a);
     let day5b = day5sol::day5b_sol("../input/day5.txt");
     println!("Solution to day5 part 2: {:?}", day5b);
+
+    let day15vec: Vec<Vec<(usize, usize, u32)>> = read_intlists("../input/day15.txt");
+    graph_from_windows(&day15vec);
 }
