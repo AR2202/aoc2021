@@ -11,6 +11,8 @@ module Common
   , splitOnSpace
   , splitOnComma
   , makeListInt
+  , readChar2digit
+  , string2decimal
   ) where
 
 import           Control.Applicative
@@ -53,3 +55,11 @@ loadPadded filename = do
 
 readTuple :: (Read a, Read b) => (String, String) -> (a, b)
 readTuple (x, y) = (read x, read y)
+
+string2decimal "" = 0
+string2decimal string =
+  (readChar2digit . head) string * 2 ^ (length string - 1) +
+  string2decimal (tail string)
+
+readChar2digit '1' = 1
+readChar2digit '0' = 0

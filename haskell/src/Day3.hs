@@ -32,14 +32,6 @@ mostCommonBit bitstates
 invertState '0' = '1'
 invertState '1' = '0'
 
-string2decimal "" = 0
-string2decimal string =
-  (readChar2digit . head) string * 2 ^ (length string - 1) +
-  string2decimal (tail string)
-
-readChar2digit '1' = 1
-readChar2digit '0' = 0
-
 -------------------
 -- day 3 part 2
 -------------------
