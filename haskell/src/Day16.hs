@@ -1,5 +1,6 @@
 module Day16
   ( day16a
+  , day16b
   ) where
 
 import           Common
@@ -32,6 +33,12 @@ data Package
 day16a :: IO ()
 day16a = readDay16 "../input/day16.txt"
 
+-----------
+-- Part 2
+-----------
+day16b :: IO ()
+day16b = readDay16b "../input/day16.txt"
+
 -------------
 -- read Input
 -------------
@@ -42,6 +49,14 @@ readDay16 filename = do
   let packages = fst $ parsePackage bin
   let versions = packageVersion packages
   print versions
+
+readDay16b :: String -> IO ()
+readDay16b filename = do
+  hex <- loadInput filename
+  let bin = concatMap hexStr2BinStr hex
+  let packages = fst $ parsePackage bin
+  let number = packageNumber packages
+  print number
 
 hexStr2BinStr :: Char -> String
 hexStr2BinStr '0' = "0000"
@@ -121,3 +136,36 @@ parseByLength packagelist s = parseByLength (package : packagelist) reststr
 packageVersion :: Package -> Version
 packageVersion (Literal v i)           = v
 packageVersion (Operator v id ltid ps) = v + sum (map packageVersion ps)
+
+packageSum :: Package -> Int
+packageSum (Literal v i)           = i
+packageSum (Operator v id ltid ps) = sum $ map packageSum ps
+
+packageProduct :: Package -> Int
+packageProduct (Literal v i)           = i
+packageProduct (Operator v id ltid ps) = product $ map packageProduct ps
+
+packageNumber :: Package -> Int
+packageNumber (Literal v i) = i
+packageNumber (Operator v 0 ltid ps) = sum $ map packageNumber ps
+packageNumber (Operator v 1 ltid ps) = product $ map packageNumber ps
+packageNumber (Operator v 2 ltid ps) = minimum $ map packageNumber ps
+packageNumber (Operator v 3 ltid ps) = maximum $ map packageNumber ps
+packageNumber (Operator v 5 ltid ps)
+  | firstpackage > secondpackage = 1
+  | otherwise = 0
+  where
+    firstpackage = (map packageNumber ps) !! 1
+    secondpackage = (map packageNumber ps) !! 0
+packageNumber (Operator v 6 ltid ps)
+  | firstpackage < secondpackage = 1
+  | otherwise = 0
+  where
+    firstpackage = (map packageNumber ps) !! 1
+    secondpackage = (map packageNumber ps) !! 0
+packageNumber (Operator v 7 ltid ps)
+  | firstpackage == secondpackage = 1
+  | otherwise = 0
+  where
+    firstpackage = (map packageNumber ps) !! 1
+    secondpackage = (map packageNumber ps) !! 0
