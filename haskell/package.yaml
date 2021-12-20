@@ -29,6 +29,7 @@ dependencies:
 - lens-aeson
 - mtl
 - text
+- comonad
 
 library:
   source-dirs: src

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e0b4737c66a656c40ef44bfb6afe20654111e44a0d49ae593ead465711ba5120
+-- hash: 994764bea486269b92d5ff458f0ad82df28a5bad676d3ce5c510c9cca7b13c7d
 
 name:           haskell
 version:        0.1.0.0
@@ -30,7 +30,12 @@ library
       Common
       Day1
       Day10
+      Day11
+      Day12
+      Day13
+      Day16
       Day2
+      Day20
       Day3
       Day4
       Day6
@@ -46,6 +51,7 @@ library
       aeson
     , base >=4.7 && <5
     , binary
+    , comonad
     , containers
     , lens
     , lens-aeson
@@ -65,6 +71,7 @@ executable haskell-exe
       aeson
     , base >=4.7 && <5
     , binary
+    , comonad
     , containers
     , haskell
     , lens
@@ -86,6 +93,7 @@ test-suite haskell-test
       aeson
     , base >=4.7 && <5
     , binary
+    , comonad
     , containers
     , haskell
     , lens
