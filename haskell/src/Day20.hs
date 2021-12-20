@@ -88,7 +88,7 @@ updateStore currentMap currentStore infstate algorithm =
 numLight = length . M.keys . M.filter (== Light)
 
 ---------input----------
-take3steps :: String -> IO ()
+take2steps :: String -> IO ()
 take2steps filename = do
   contents <- splitOnBlankLine filename
   let alg = head contents
