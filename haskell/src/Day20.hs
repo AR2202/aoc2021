@@ -1,5 +1,6 @@
 module Day20
   ( day20a
+  , day20b
   ) where
 
 import           Common
@@ -88,8 +89,9 @@ updateStore currentMap currentStore infstate algorithm =
 numLight = length . M.keys . M.filter (== Light)
 
 ---------input----------
-take2steps :: String -> IO ()
-take2steps filename = do
+readInput ::
+     String -> IO (Store Coord Pixel, M.Map Coord Pixel, Pixel, Algorithm)
+readInput filename = do
   contents <- splitOnBlankLine filename
   let alg = head contents
   let im = last contents
@@ -99,9 +101,7 @@ take2steps filename = do
   let states = concat $ zipWith toStates [0 ..] xvals
   let istore = initialImage states (0, 0)
   let initialmap = M.fromList states
-  let step2 = step $ step (istore, initialmap, Dark, algorithm)
-  let lightpix = numLight $ mapFromStep step2
-  print lightpix
+  return (istore, initialmap, Dark, algorithm)
 
 toStates x = map (toState x)
 
@@ -119,6 +119,27 @@ day20a = take2steps "../input/day20.txt"
 
 example20a :: IO ()
 example20a = take2steps "../input/example20.txt"
+
+take2steps :: String -> IO ()
+take2steps filename = do
+  startvals <- readInput filename
+  let step2 = step $ step startvals
+  let lightpix = numLight $ mapFromStep step2
+  print lightpix
+
+--------------------
+-- Part 2
+--------------------
+day20b :: IO ()
+day20b = take50steps "../input/day20.txt"
+
+--very inefficient - memoization needed
+take50steps :: String -> IO ()
+take50steps filename = do
+  startvals <- readInput filename
+  let step50 = iterate step startvals !! 50
+  let lightpix50 = numLight $ mapFromStep step50
+  print lightpix50
 
 ----------- testdata from example ------
 testInitial =
