@@ -2,16 +2,7 @@
 {-# LANGUAGE QuasiQuotes       #-}
 
 module Day22
-  ( readDay22
-  , inArea
-  , area1
-  , area2
-  , area3
-  , cubeInArea
-  , Cubestate(..)
-  , testCubes
-  , applyInstructions
-  , solve22a
+  ( day22a
   ) where
 
 import           Common
@@ -34,8 +25,6 @@ data Cubestate
   deriving (Show, Read, Eq)
 
 type Coord = (Int, Int, Int)
-
-type Cube = (Coord, Cubestate)
 
 data Area =
   Area
@@ -102,6 +91,7 @@ isOutsideArea :: Area -> Area -> Bool
 isOutsideArea a1 a2 =
   (a1 `isOutsideX` a2) || (a1 `isOutsideY` a2) || (a1 `isOutsideZ` a2)
 
+isOutside :: Int -> Int -> Int -> Int -> Bool
 isOutside start1 start2 end1 end2 = (start1 > end2) || (start2 > end1)
 
 isOutsideX :: Area -> Area -> Bool
@@ -119,21 +109,26 @@ cubeInArea (x, y, z) area =
   x <= x_end area &&
   y_start area <= y && y <= y_end area && z_start area <= z && z <= z_end area
 
+changeCubeStates :: [(Area, Cubestate)] -> Coord -> Cubestate
 changeCubeStates [] cube = Off
 changeCubeStates (x:xs) cube
   | cubeInArea cube (fst x) = snd x
   | otherwise = changeCubeStates xs cube
 
+allCubesInArea :: [Coord]
 allCubesInArea =
   [(x, y, z) | x <- [-50 .. 50], y <- [-50 .. 50], z <- [-50 .. 50]]
 
+addToCubeState :: [(Area, Cubestate)] -> Coord -> (Int, Int) -> (Int, Int)
 addToCubeState list cube (on, off)
   | changeCubeStates list cube == Off = (on, off + 1)
   | otherwise = (on + 1, off)
 
+applyInstructions :: [Coord] -> [(Area, Cubestate)] -> (Int, Int)
 applyInstructions cubelist instlist =
   foldr (addToCubeState (reverse instlist)) (0, 0) cubelist
 
+fstInTotalArea :: (Area, a) -> Bool
 fstInTotalArea (x, y) = inTotalArea x
 
 -------------
