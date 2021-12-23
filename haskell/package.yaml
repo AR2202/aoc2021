@@ -30,6 +30,7 @@ dependencies:
 - mtl
 - text
 - comonad
+- lens-regex-pcre
 
 library:
   source-dirs: src
