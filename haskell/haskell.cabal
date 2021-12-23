@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c477d934fb3ddff0ea06cffc6ea21242aa9261c5e47d1d33e89c2c1771c31225
+-- hash: 872eb72454553be51b933faa8d5044904050698396f20987fffec59dc7b69b66
 
 name:           haskell
 version:        0.1.0.0
@@ -28,22 +28,23 @@ source-repository head
 library
   exposed-modules:
       Common
-      Day1
+      Day01
+      Day02
+      Day03
+      Day04
+      Day06
+      Day07
+      Day08
+      Day09
       Day10
       Day11
       Day12
       Day13
       Day16
-      Day2
       Day20
       Day21
-      Day3
-      Day4
-      Day6
+      Day22
       Day6_
-      Day7
-      Day8
-      Day9
   other-modules:
       Paths_haskell
   hs-source-dirs:
@@ -56,6 +57,7 @@ library
     , containers
     , lens
     , lens-aeson
+    , lens-regex-pcre
     , mtl
     , split
     , text
@@ -77,6 +79,7 @@ executable haskell-exe
     , haskell
     , lens
     , lens-aeson
+    , lens-regex-pcre
     , mtl
     , split
     , text
@@ -99,6 +102,7 @@ test-suite haskell-test
     , haskell
     , lens
     , lens-aeson
+    , lens-regex-pcre
     , mtl
     , split
     , text

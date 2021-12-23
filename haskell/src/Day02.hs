@@ -1,4 +1,4 @@
-module Day2
+module Day02
   ( example2a
   , example2b
   , day2a

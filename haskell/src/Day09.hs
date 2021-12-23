@@ -1,4 +1,4 @@
-module Day9
+module Day09
   ( read_day9
   , day9a
   ) where

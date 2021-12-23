@@ -1,4 +1,4 @@
-module Day7
+module Day07
   ( example7
   , day7a
   , day7b
