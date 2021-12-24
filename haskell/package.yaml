@@ -31,6 +31,7 @@ dependencies:
 - text
 - comonad
 - lens-regex-pcre
+- vector
 
 library:
   source-dirs: src
