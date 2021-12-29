@@ -64,8 +64,10 @@ readVarOrInt s =
     Nothing -> Left $ readVar s
     Just i  -> Right i
 
+splitInst :: String -> [[String]]
 splitInst = map words . lines
 
+capitalise :: String -> String
 capitalise []     = []
 capitalise (x:xs) = toUpper x : xs
 
@@ -178,6 +180,7 @@ digs 0 = []
 digs x = digs (x `div` 10) ++ [fromInteger (x `mod` 10)]
 
 --this doesn't work - too many possibilities
+testModelNumber :: Instructions -> Integer -> Integer
 testModelNumber instlist number
   | 0 `elem` digs number = testModelNumber instlist (number - 1)
   | z (runInstructions instlist (digs number)) == 0 = number
