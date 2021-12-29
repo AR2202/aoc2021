@@ -136,6 +136,9 @@ safeTail :: [a] -> [a]
 safeTail [] = []
 safeTail l  = tail l
 
+-------------------
+-- Interpreter
+-------------------
 execute :: Instruction -> Maybe Int -> ProgramState -> ProgramState
 execute (Input var) (Just i) p = inputNumber var i p
 execute (Input var) Nothing p = p
@@ -186,22 +189,9 @@ testModelNumber instlist number
   | z (runInstructions instlist (digs number)) == 0 = number
   | otherwise = testModelNumber instlist (number - 1)
 
-runInstructionsBackwards :: [(ProgramState, [Int])] -> Instructions -> [[Int]]
-runInstructionsBackwards pro instructions =
-  map snd $
-  filter (allZero . fst) $
-  foldr
-    (\inst acc ->
-       (nub . filter (not . tooLarge . snd)) acc >>= executeBackwards inst)
-    pro
-    instructions
-
-tooLarge :: [Int] -> Bool
-tooLarge = any (\x -> x > 9 || x < 1)
-
-allZero :: ProgramState -> Bool
-allZero (ProgramState w x y z) = all (== 0) [w, x, y, z]
-
+-------------------------------------
+-- running the Interpreter backwards
+-------------------------------------
 executeBackwards ::
      Instruction -> (ProgramState, [Int]) -> [(ProgramState, [Int])]
 executeBackwards (Input var) (p, is) =
@@ -261,3 +251,19 @@ allMod var i p =
   map
     (flip (inputNumber var) p)
     [x | x <- [0 ..], x `mod` i == retrieveVar var p]
+
+runInstructionsBackwards :: [(ProgramState, [Int])] -> Instructions -> [[Int]]
+runInstructionsBackwards pro instructions =
+  map snd $
+  filter (allZero . fst) $
+  foldr
+    (\inst acc ->
+       (nub . filter (not . tooLarge . snd)) acc >>= executeBackwards inst)
+    pro
+    instructions
+
+tooLarge :: [Int] -> Bool
+tooLarge = any (\x -> x > 9 || x < 1)
+
+allZero :: ProgramState -> Bool
+allZero (ProgramState w x y z) = all (== 0) [w, x, y, z]
