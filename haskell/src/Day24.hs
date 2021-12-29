@@ -12,7 +12,7 @@ module Day24
 
 import           Common
 import           Data.Char  (toUpper)
-import           Data.List  (foldl',nub)
+import           Data.List  (foldl', nub)
 import           Data.Maybe (fromJust)
 import           Text.Read  (readMaybe)
 
@@ -45,6 +45,7 @@ data Variable
   deriving (Show, Read, Eq)
 
 type Instructions = [Instruction]
+
 ---------------------
 -- parsing the Input
 ---------------------
@@ -177,7 +178,6 @@ digs 0 = []
 digs x = digs (x `div` 10) ++ [fromInteger (x `mod` 10)]
 
 --this doesn't work - too many possibilities
-
 testModelNumber instlist number
   | 0 `elem` digs number = testModelNumber instlist (number - 1)
   | z (runInstructions instlist (digs number)) == 0 = number
@@ -254,4 +254,7 @@ allNonEql var i p =
   map (flip (inputNumber var) p) (filter (/= i) ([0 ..] ++ map ((-1) *) [1 ..]))
 
 allMod :: Variable -> Int -> ProgramState -> [ProgramState]
-allMod var i p = map (flip (inputNumber var) p)  [x| x <- [0..], x `mod` i == retrieveVar var p]
+allMod var i p =
+  map
+    (flip (inputNumber var) p)
+    [x | x <- [0 ..], x `mod` i == retrieveVar var p]
