@@ -118,19 +118,19 @@ executeBackwards (Eql var (Left var2)) (p, is) =
     else zip (allNonEql var (retrieveVar var2 p) p) (repeat is)
 
 
-allStates var p = map (flip (inputNumber var) p)( [0 .. ] ++ map ((-1)*)[1..])
+allStates var p = map (flip (inputNumber var) p)( [0 .. ] ++ map ((-1) * )[1..])
 
 allDivisions var i p =
   map (flip (inputNumber var) p . (retrieveVar var p *)) [i .. (2 * i - 1)]
-allNonEql var i p = map (flip (inputNumber var) p) (filter (/= i) ([0..]++ map ((-1)*)[1..]))
+allNonEql var i p = map (flip (inputNumber var) p) (filter (/= i) ([0..] ++ map ((-1) * )[1..]))
 
-allMod var i p = map (flip (inputNumber var) p) [x|x<-[0..], x `mod`i== retrieveVar var p]
+allMod var i p = map (flip (inputNumber var) p) [x|x<-[0..], x `mod` i == retrieveVar var p]
 
 runInstructionsBackwards :: [(ProgramState,[Int])] -> Instructions -> [[Int]]
 runInstructionsBackwards pro instructions = map snd $ filter (allZero . fst) $ foldr (\inst acc -> (nub . filter (not . tooLarge . snd)) acc >>= executeBackwards inst) pro instructions
 
 tooLarge :: [Int] -> Bool
-tooLarge  = any (\x -> x>9 || x < 1)
+tooLarge  = any (\x -> x > 9 || x < 1)
 
 allZero (ProgramState w x y z ) = all (== 0) [w, x, y, z]
 
