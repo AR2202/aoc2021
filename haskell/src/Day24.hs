@@ -7,11 +7,12 @@ module Day24
   , runInstructions
   , readMaybeInt
   , readDay24
+  , allEndValues
   ) where
 
 import           Common
 import           Data.Char  (toUpper)
-import           Data.List  (foldl')
+import           Data.List  (foldl',nub)
 import           Data.Maybe (fromJust)
 import           Text.Read  (readMaybe)
 
@@ -66,17 +67,72 @@ execute (Mod var (Right i)) _ p = inputNumber var (retrieveVar var p `mod` i) p
 execute (Eql var (Left var2)) _ p =
   inputNumber
     var
-    (if (retrieveVar var p) == (retrieveVar var2 p)
+    (if retrieveVar var p == retrieveVar var2 p
        then 1
        else 0)
     p
 execute (Eql var (Right i)) _ p =
   inputNumber
     var
-    (if (retrieveVar var p) == i
+    (if retrieveVar var p == i
        then 1
        else 0)
     p
+
+executeBackwards :: Instruction -> (ProgramState,[Int]) -> [(ProgramState, [Int])]
+executeBackwards (Input var) (p, is) = zip (allStates var p) (repeat $ retrieveVar var p : is)
+executeBackwards (Add var (Left var2)) (p, is) =
+   [(inputNumber var (retrieveVar var p - retrieveVar var2 p) p, is)]
+executeBackwards (Add var (Right i)) (p, is) =
+  [(inputNumber var (retrieveVar var p - i) p, is)]
+executeBackwards (Mul var (Right 0)) (p, is) = 
+    case retrieveVar var p of
+        0 -> zip (allStates var p) (repeat is)
+        _ -> []
+
+executeBackwards (Mul var (Right i)) (p, is) =
+ 
+  case retrieveVar var p `mod` i of
+    0 -> [(inputNumber var (retrieveVar var p `div` i) p, is)]
+    _ -> []
+executeBackwards (Mul var (Left var2)) (p, is) =
+    case retrieveVar var2 p of
+        0 -> case retrieveVar var p of
+                0 -> zip (allStates var p) (repeat is)
+                _ -> []
+        _ -> case retrieveVar var p `mod` retrieveVar var2 p of
+                0 -> [( inputNumber var (retrieveVar var p `div` retrieveVar var2 p) p, is)]
+                _ -> []
+executeBackwards (Div var (Left var2)) (p, is) =
+  zip (allDivisions var (retrieveVar var2 p) p) (repeat is)
+executeBackwards (Div var (Right i)) (p, is) = zip (allDivisions var i p) (repeat is)
+executeBackwards (Mod var (Left var2))  (p, is) =zip (allMod var (retrieveVar var2 p) p) (repeat is)
+executeBackwards (Mod var (Right i))  (p, is) = zip (allMod var i p) (repeat is)
+executeBackwards (Eql var (Right i)) (p, is) =
+  if retrieveVar var p == 1
+    then [(inputNumber var i p, is)]
+    else zip (allNonEql var i p) (repeat is)
+executeBackwards (Eql var (Left var2)) (p, is) =
+  if retrieveVar var p == 1
+    then [(inputNumber var (retrieveVar var2 p) p, is)]
+    else zip (allNonEql var (retrieveVar var2 p) p) (repeat is)
+
+
+allStates var p = map (flip (inputNumber var) p)( [0 .. ] ++ map ((-1)*)[1..])
+
+allDivisions var i p =
+  map (flip (inputNumber var) p . (retrieveVar var p *)) [i .. (2 * i - 1)]
+allNonEql var i p = map (flip (inputNumber var) p) (filter (/= i) ([0..]++ map ((-1)*)[1..]))
+
+allMod var i p = map (flip (inputNumber var) p) [x|x<-[0..], x `mod`i== retrieveVar var p]
+
+runInstructionsBackwards :: [(ProgramState,[Int])] -> Instructions -> [[Int]]
+runInstructionsBackwards pro instructions = map snd $ filter (allZero . fst) $ foldr (\inst acc -> (nub . filter (not . tooLarge . snd)) acc >>= executeBackwards inst) pro instructions
+
+tooLarge :: [Int] -> Bool
+tooLarge  = any (\x -> x>9 || x < 1)
+
+allZero (ProgramState w x y z ) = all (== 0) [w, x, y, z]
 
 inputNumber W i p = p {w = i}
 inputNumber X i p = p {x = i}
@@ -105,15 +161,16 @@ runInstructions instlist nums =
 
 digs :: Integer -> [Int]
 digs 0 = []
-digs x = digs (x `div` 10) ++ ([fromInteger (x `mod` 10)])
+digs x = digs (x `div` 10) ++ [fromInteger (x `mod` 10)]
 
 --this doesn't work - too many possibilities
+
 testModelNumber instlist number
   | 0 `elem` digs number = testModelNumber instlist (number - 1)
   | z (runInstructions instlist (digs number)) == 0 = number
   | otherwise = testModelNumber instlist (number - 1)
 
---------------------
+---------------------
 -- parsing the Input
 ---------------------
 readMaybeInt :: String -> Maybe Int
@@ -164,8 +221,17 @@ parseAsInst strs =
 parseInstructions :: String -> Instructions
 parseInstructions = map parseAsInst . splitInst
 
+allEndStates = ProgramState <$> [0..9] <*> [0..9] <*> [0..9] <*> [0]
+
+allEndValues :: [(ProgramState, [Int])]
+allEndValues = zip allEndStates (repeat [])
+
+readDay24 :: String -> IO ()
 readDay24 filename = do
   s <- loadInput filename
-  let inst = parseInstructions s
-  let modelnumber = testModelNumber inst 99999999999999
-  print modelnumber
+  let inst = parseInstructions s 
+  let endstates = allEndValues
+  let inputs = runInstructionsBackwards endstates inst
+  let max =  maximum $ map (readMaybeInt . concatMap show) inputs
+  print max
+  
