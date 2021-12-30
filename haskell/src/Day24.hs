@@ -110,7 +110,7 @@ allEndValues = zip allEndStates (repeat [])
 readDay24 :: String -> IO ()
 readDay24 filename = do
   s <- loadInput filename
-  let inst = parseInstructions s
+  let inst = reverse $ parseInstructions s
   let endstates = allEndValues
   let inputs = runInstructionsBackwards endstates inst
   let max = maximum $ map (readMaybeInt . concatMap show) inputs
@@ -240,7 +240,9 @@ allStates var p = map (flip (inputNumber var) p) ([0 ..] ++ map ((-1) *) [1 ..])
 
 allDivisions :: Variable -> Int -> ProgramState -> [ProgramState]
 allDivisions var i p =
-  map (flip (inputNumber var) p . (retrieveVar var p *)) [i .. (2 * i - 1)]
+  map
+    (flip (inputNumber var) p)
+    [(retrieveVar var p) * i .. (retrieveVar var p) * (i + 1) - 1]
 
 allNonEql :: Variable -> Int -> ProgramState -> [ProgramState]
 allNonEql var i p =
@@ -256,8 +258,8 @@ runInstructionsBackwards :: [(ProgramState, [Int])] -> Instructions -> [[Int]]
 runInstructionsBackwards pro instructions =
   map snd $
   filter (allZero . fst) $
-  foldr
-    (\inst acc ->
+  foldl'
+    (\acc inst ->
        (nub . filter (not . tooLarge . snd)) acc >>= executeBackwards inst)
     pro
     instructions
