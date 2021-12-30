@@ -242,7 +242,7 @@ allDivisions :: Variable -> Int -> ProgramState -> [ProgramState]
 allDivisions var i p =
   map
     (flip (inputNumber var) p)
-    [(retrieveVar var p) * i .. (retrieveVar var p) * (i + 1) - 1]
+    [(retrieveVar var p) * i .. (retrieveVar var p + 1) * i - 1]
 
 allNonEql :: Variable -> Int -> ProgramState -> [ProgramState]
 allNonEql var i p =
