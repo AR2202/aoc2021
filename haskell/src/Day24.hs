@@ -11,10 +11,13 @@ module Day24
   ) where
 
 import           Common
-import           Data.Char  (toUpper)
-import           Data.List  (foldl', nub)
-import           Data.Maybe (fromJust)
-import           Text.Read  (readMaybe)
+import           Data.Bifunctor  (bimap)
+import           Data.Char       (toUpper)
+import           Data.Foldable   (foldr')
+import           Data.List       (foldl', nub)
+import           Data.List.Split (split, splitWhen, startsWithOneOf)
+import           Data.Maybe      (fromJust)
+import           Text.Read       (readMaybe)
 
 -------------
 -- Types
@@ -110,10 +113,16 @@ allEndValues = zip allEndStates (repeat [])
 readDay24 :: String -> IO ()
 readDay24 filename = do
   s <- loadInput filename
-  let inst = reverse $ parseInstructions s
-  let endstates = allEndValues
-  let inputs = runInstructionsBackwards endstates inst
-  let max = maximum $ map (readMaybeInt . concatMap show) inputs
+  let inst = parseInstructions s
+  let instChunks =
+        split (startsWithOneOf [Input X, Input W, Input Y, Input Z]) inst
+  let steps = runAllChunks instChunks
+  let correctOutput = filter ((== 0) . retrieveVar Z . fst) steps
+  --let endstates = allEndValues
+  --let inputs = runInstructionsBackwards endstates inst
+  let max =
+        maximum $
+        map (readMaybeInt . concatMap show . reverse . snd) correctOutput
   print max
 
 inputNumber :: Variable -> Int -> ProgramState -> ProgramState
@@ -174,6 +183,39 @@ runInstruction (p, nums) (Input var) =
   (execute (Input var) (safeHead nums) p, safeTail nums)
 runInstruction (p, nums) inst = (execute inst Nothing p, nums)
 
+runInstruction' :: Int -> ProgramState -> Instruction -> ProgramState
+runInstruction' i p (Input var) = execute (Input var) (Just i) p
+runInstruction' i p inst        = execute inst Nothing p
+
+runInstructions' :: Instructions -> ProgramState -> Int -> ProgramState
+runInstructions' instlist p i = foldl' (runInstruction' i) p instlist
+
+runOnAllInputs ::
+     Instructions -> (ProgramState, [Int]) -> [(ProgramState, [Int])]
+runOnAllInputs instlist (p, is) =
+  foldr'
+    (\i acc ->
+       if (runInstructions' instlist p i) `elem` (map fst acc)
+         then acc
+         else (runInstructions' instlist p i, i : is) : acc)
+    []
+    [1 .. 9]
+
+runAllChunks :: [Instructions] -> [(ProgramState, [Int])]
+runAllChunks instructions =
+  foldl'
+    (\acc inst ->
+       foldr'
+         (\p acc2 ->
+            acc2 ++
+            filter
+              (not . flip elem (map fst acc2) . fst)
+              (runOnAllInputs inst p))
+         []
+         acc)
+    [(ProgramState 0 0 0 0, [])]
+    instructions
+
 runInstructions :: Instructions -> [Int] -> ProgramState
 runInstructions instlist nums =
   fst $ foldl' runInstruction (ProgramState 0 0 0 0, nums) instlist
@@ -190,7 +232,7 @@ testModelNumber instlist number
   | otherwise = testModelNumber instlist (number - 1)
 
 -------------------------------------
--- running the Interpreter backwards
+-- running the Interpreter backwards - this doesn't currently work
 -------------------------------------
 executeBackwards ::
      Instruction -> (ProgramState, [Int]) -> [(ProgramState, [Int])]
@@ -258,8 +300,8 @@ runInstructionsBackwards :: [(ProgramState, [Int])] -> Instructions -> [[Int]]
 runInstructionsBackwards pro instructions =
   map snd $
   filter (allZero . fst) $
-  foldl'
-    (\acc inst ->
+  foldr
+    (\inst acc ->
        (nub . filter (not . tooLarge . snd)) acc >>= executeBackwards inst)
     pro
     instructions
