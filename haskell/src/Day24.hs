@@ -8,6 +8,7 @@ module Day24
   , readMaybeInt
   , readDay24
   , allEndValues
+  , day24a
   ) where
 
 import           Common
@@ -37,6 +38,12 @@ data ProgramState =
     , x :: Int
     , y :: Int
     , z :: Int
+    }
+  deriving (Show, Read, Eq)
+
+newtype ProgramState' =
+  ProgramState'
+    { z' :: Int
     }
   deriving (Show, Read, Eq)
 
@@ -110,16 +117,20 @@ allEndValues = zip allEndStates (repeat [])
 ------------
 -- Part 1
 ------------
+day24a :: IO ()
+day24a = readDay24 "../input/day24.txt"
+
 readDay24 :: String -> IO ()
 readDay24 filename = do
   s <- loadInput filename
   let inst = parseInstructions s
   let instChunks =
         split (startsWithOneOf [Input X, Input W, Input Y, Input Z]) inst
-  let steps = runAllChunks instChunks
-  let correctOutput = filter ((== 0) . retrieveVar Z . fst) steps
-  --let endstates = allEndValues
-  --let inputs = runInstructionsBackwards endstates inst
+  let first6steps = runAllChunks $ take 6 instChunks
+  let maxfirst6 = last first6steps
+  let correctfirst6 = filter ((== 405) . retrieveVar Z . fst) first6steps
+  let next6steps = runAllChunks' correctfirst6 $drop 6 instChunks
+  let correctOutput = filter ((== 0) . retrieveVar Z . fst) next6steps
   let max =
         maximum $
         map (readMaybeInt . concatMap show . reverse . snd) correctOutput
@@ -195,11 +206,17 @@ runOnAllInputs ::
 runOnAllInputs instlist (p, is) =
   foldr'
     (\i acc ->
-       if (runInstructions' instlist p i) `elem` (map fst acc)
+       if runInstructions' instlist p i `elem'` map fst acc
          then acc
          else (runInstructions' instlist p i, i : is) : acc)
     []
     [1 .. 9]
+
+generalizeProgState :: ProgramState -> ProgramState'
+generalizeProgState (ProgramState _ _ _ z) = ProgramState' z
+
+elem' :: ProgramState -> [ProgramState] -> Bool
+elem' p ps = generalizeProgState p `elem` map generalizeProgState ps
 
 runAllChunks :: [Instructions] -> [(ProgramState, [Int])]
 runAllChunks instructions =
@@ -207,13 +224,29 @@ runAllChunks instructions =
     (\acc inst ->
        foldr'
          (\p acc2 ->
-            acc2 ++
-            filter
-              (not . flip elem (map fst acc2) . fst)
-              (runOnAllInputs inst p))
+            (filter
+               (not . flip elem' (map fst acc2) . fst)
+               (runOnAllInputs inst p)) ++
+            acc2)
          []
          acc)
     [(ProgramState 0 0 0 0, [])]
+    instructions
+
+runAllChunks' ::
+     [(ProgramState, [Int])] -> [Instructions] -> [(ProgramState, [Int])]
+runAllChunks' startstates instructions =
+  foldl'
+    (\acc inst ->
+       foldr'
+         (\p acc2 ->
+            (filter
+               (not . flip elem' (map fst acc2) . fst)
+               (runOnAllInputs inst p)) ++
+            acc2)
+         []
+         acc)
+    startstates
     instructions
 
 runInstructions :: Instructions -> [Int] -> ProgramState
