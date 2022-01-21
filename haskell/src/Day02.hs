@@ -37,6 +37,7 @@ data PosAim =
 parseInstructions :: String -> IO [Instructions]
 parseInstructions input = map (read . capitalise) <$> loadAndSplitLines input
 
+capitalise :: [Char] -> [Char]
 capitalise []     = []
 capitalise (x:xs) = toUpper x : xs
 
@@ -48,6 +49,7 @@ move p (Up x)      = p {depth = depth p - x}
 multiplyPosition :: Position -> Int
 multiplyPosition p = horizontal p * depth p
 
+solution2a :: String -> IO Int
 solution2a input =
   multiplyPosition . foldl move (Position 0 0) <$> parseInstructions input
 
@@ -66,6 +68,7 @@ move2 p (Forward x) =
 move2 p (Down x) = p {aim = aim p + x}
 move2 p (Up x) = p {aim = aim p - x}
 
+solution2b :: String -> IO Int
 solution2b input =
   multiplyPosition . pos . foldl move2 (PosAim (Position 0 0) 0) <$>
   parseInstructions input

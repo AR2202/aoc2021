@@ -1,3 +1,5 @@
+{-# LANGUAGE BangPatterns #-}
+
 module Day21
   ( addToPos
   , example21a
@@ -5,6 +7,10 @@ module Day21
   , day21a
   , diracDice
   , allScores
+  , winningPlayer
+  , Player(..)
+  , isScore21
+  , rounds
   ) where
 
 import           Common
@@ -74,7 +80,7 @@ day21a = diracDice 1 5
 --------
 -- Part2
 --------
-addToPos' :: Integer -> Integer -> Integer
+addToPos' :: Int -> Int -> Int
 addToPos' pos sumOfDieRolls =
   if newpos `mod` 10 == 0
     then 10
@@ -88,3 +94,23 @@ allPos currentpos =
 
 allScores (currentpos, currentscore) =
   zip (allPos currentpos) (map (+ currentscore) $allPos currentpos)
+
+isScore21 :: (a, Int) -> Bool
+isScore21 = (>= 21) . snd
+
+winningPlayer :: Int -> Int -> Player
+winningPlayer roundsP1 roundsP2 =
+  if roundsP1 > roundsP2
+    then Player2
+    else Player1
+
+winners :: [Int] -> [Int] -> [Player]
+winners allroundsP1 allroundsP2 = winningPlayer <$> allroundsP1 <*> allroundsP2
+
+rounds startpos = go [(startpos, 0)] [] 0
+  where
+    go [] rounds currentRound = rounds
+    go !vals !rounds currentRound = go newvals newrounds (currentRound + 1)
+      where
+        newvals = filter (not . isScore21) vals >>= allScores
+        newrounds = rounds ++ map (const currentRound) (filter isScore21 vals)

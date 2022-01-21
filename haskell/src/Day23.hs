@@ -14,12 +14,16 @@ module Day23
   , newStatesToMap
   , testMap
   , day23Map
+  , minDifference
+  , day23Sol
+  , day23Example
   ) where
 
 import           Common
 import           Control.Applicative (liftA2)
 import           Data.List           (foldl', minimumBy, nub)
 import qualified Data.Map            as M
+import           Data.Maybe          (isJust)
 import           Data.Ord            (comparing)
 import qualified Data.Vector         as V
 
@@ -73,11 +77,20 @@ day23 =
 example23energy :: (V.Vector (Maybe Amphipod), Maybe Energy)
 example23energy = (example23, Just 0)
 
+example23Map :: M.Map (V.Vector (Maybe Amphipod)) (Maybe Energy)
+example23Map = M.fromList [example23energy]
+
 day23energy :: (V.Vector (Maybe Amphipod), Maybe Energy)
 day23energy = (day23, Just 0)
 
 day23Map :: M.Map (V.Vector (Maybe Amphipod)) (Maybe Energy)
 day23Map = M.fromList [day23energy]
+
+day23Sol :: Maybe (V.Vector (Maybe Amphipod), Maybe Energy)
+day23Sol = runUntilCorrect M.empty day23Map
+
+day23Example :: Maybe (V.Vector (Maybe Amphipod), Maybe Energy)
+day23Example = runUntilCorrect M.empty example23Map
 
 canMove v ix1 ix2
   | isNothing v ix1 = False
@@ -165,10 +178,13 @@ newStatesToMap m = foldl' insertEnergy m $ allNewStates $ M.toList m
 
 runUntilCorrect ::
      M.Map (V.Vector (Maybe Amphipod)) (Maybe Energy)
+  -> M.Map (V.Vector (Maybe Amphipod)) (Maybe Energy)
   -> Maybe (V.Vector (Maybe Amphipod), Maybe Energy)
-runUntilCorrect oldMap
+runUntilCorrect allStateMap oldMap
   | null notExceedingMinEnergy = minEnergyCorrect
-  | otherwise = runUntilCorrect $ newStatesToMap validStates
+  | otherwise =
+    runUntilCorrect allStateMapUpdated $
+    flip minDifference allStateMap $ newStatesToMap validStates
   where
     validStates =
       case minEnergyCorrect of
@@ -178,6 +194,7 @@ runUntilCorrect oldMap
     notExceedingMinEnergy =
       filter (lowerEnergy minEnergyCorrect) $
       M.toList $ snd $ splitOnCorrect oldMap
+    allStateMapUpdated = unionWithLower allStateMap $ newStatesToMap validStates
 
 allCorrect :: (V.Vector (Maybe Amphipod), Maybe Energy) -> Bool
 allCorrect (v, e) = all (isCorrect v) [0 .. 14]
@@ -247,3 +264,21 @@ lowerEnergy ::
   -> Bool
 lowerEnergy Nothing _              = True
 lowerEnergy (Just (_, e1)) (_, e2) = e2 < e1
+
+minDifference = M.differenceWith keepIfLower
+
+safeMin :: Ord a => [a] -> Maybe a
+safeMin [] = Nothing
+safeMin xs = Just $ minimum xs
+
+keepIfLower a b =
+  if a < b
+    then Just a
+    else Nothing
+
+unionWithLower ::
+     (Ord k, Ord a)
+  => M.Map k (Maybe a)
+  -> M.Map k (Maybe a)
+  -> M.Map k (Maybe a)
+unionWithLower = M.unionWith (\a b -> minimum $ filter isJust [a, b])

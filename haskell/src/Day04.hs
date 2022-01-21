@@ -8,6 +8,16 @@ import           Common
 import           Data.List
 import           Data.Maybe (fromMaybe)
 
+----------------------
+-- Types
+----------------------
+data BingoBoard =
+  BingoBoard
+    { rows    :: [[Int]]
+    , columns :: [[Int]]
+    }
+  deriving (Show, Read, Eq)
+
 -----------------------
 -- reading Input
 -----------------------
@@ -24,37 +34,34 @@ readBoards solver filename = do
   return answer
 
 ----------------------
--- Types
-----------------------
-data BingoBoard =
-  BingoBoard
-    { rows    :: [[Int]]
-    , columns :: [[Int]]
-    }
-  deriving (Show, Read, Eq)
-
-----------------------
 -- Part 1
 ----------------------
+day4a :: IO Int
 day4a = readBoards playBingo "../input/day4.txt"
 
+filterOutSpaces :: [String] -> [String]
 filterOutSpaces = filter (/= "")
 
+listToBingoBoard :: [[String]] -> BingoBoard
 listToBingoBoard list =
   BingoBoard ((map . map) read list) ((map . map) read $ transpose list)
 
+isWinning :: BingoBoard -> Bool
 isWinning board = completeRow || completeColumn
   where
     completeRow = elem [] $ rows board
     completeColumn = elem [] $ columns board
 
+crossOut :: Int -> BingoBoard -> BingoBoard
 crossOut number board = BingoBoard newrows newcolumns
   where
     newrows = map (filter (/= number)) $ rows board
     newcolumns = map (filter (/= number)) $ columns board
 
+countRemaining :: BingoBoard -> Int
 countRemaining board = sum $ map sum $ rows board
 
+playBingo :: [BingoBoard] -> [Int] -> ([BingoBoard], Maybe Int)
 playBingo boards [] = ([], Nothing)
 playBingo boards (x:xs)
   | winningBoards /= [] = (winningBoards, Just x)
@@ -66,6 +73,7 @@ playBingo boards (x:xs)
 --------------------
 -- Part 2
 --------------------
+losingBingo :: [BingoBoard] -> [Int] -> ([BingoBoard], Maybe Int)
 losingBingo boards [] = ([], Nothing)
 losingBingo boards (x:xs)
   | (length boards == 1) && (winningBoards /= []) = (winningBoards, Just x)
@@ -75,6 +83,8 @@ losingBingo boards (x:xs)
     newboardstates = map (crossOut x) boards
     winningBoards = filter isWinning newboardstates
 
+day4b :: IO Int
 day4b = readBoards losingBingo "../input/day4.txt"
 
+example4b :: IO Int
 example4b = readBoards losingBingo "../input/example4.txt"
